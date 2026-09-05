@@ -22,6 +22,8 @@ When several policies apply, the matcher returns the single highest-severity pol
 
 Requires Python 3.10+ and internet access to Open-Meteo.
 
+Streamlit is pinned in `requirements.txt` to keep deployed browser assets consistent.
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate

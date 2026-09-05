@@ -1,6 +1,8 @@
 fastapi>=0.115
 uvicorn[standard]>=0.30
-streamlit>=1.39
+# Pin a stable release. Newer 1.63.0 bundles can omit a dynamically imported
+# browser chunk on Render, causing a blank page / ChatInput import failure.
+streamlit==1.50.0
 langgraph>=0.2
 langchain-core>=0.3
 pydantic>=2.8
