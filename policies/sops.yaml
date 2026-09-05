@@ -1,0 +1,111 @@
+# SOPs are data, not code. Add an item here to add a policy; the matcher reads it
+# at runtime. If more than one matches, the bot selects the highest severity.
+sops:
+  - id: SOP-WIND-CYCLE-01
+    category: active-travel
+    title: Strong wind for cycling or two-wheelers
+    severity: high
+    activities: [cycling, two_wheeler]
+    conditions: [{field: wind_kmh, operator: ">=", value: 40}]
+    guidance: "Avoid cycling or riding a two-wheeler until winds ease; crosswinds can affect control."
+    rationale: "Wind at or above 40 km/h is a safety risk for exposed riders."
+  - id: SOP-RAIN-TRAVEL-01
+    category: travel
+    title: Heavy rain travel disruption
+    severity: high
+    activities: [commute, travel, cycling, two_wheeler]
+    conditions: [{field: precipitation_mm, operator: ">=", value: 7.5}]
+    guidance: "Delay non-essential travel where possible and check local transport or road alerts before leaving."
+    rationale: "Heavy observed precipitation can reduce visibility and disrupt routes."
+  - id: SOP-RAIN-CYCLE-02
+    category: active-travel
+    title: High rain probability for cycling
+    severity: high
+    activities: [cycling, two_wheeler]
+    conditions: [{field: precipitation_probability, operator: ">=", value: 70}]
+    guidance: "Avoid cycling or a two-wheeler trip if it is not essential; plan an alternate route or transport option."
+    rationale: "A rain probability of 70% or higher creates a material wet-road and visibility risk for exposed riders."
+  - id: SOP-RAIN-OUTDOOR-01
+    category: recreation
+    title: Rainy outdoor activity
+    severity: moderate
+    activities: [hiking, walking, running, picnic, park, outdoor_exercise]
+    conditions: [{field: precipitation_probability, operator: ">=", value: 60}]
+    guidance: "Plan an indoor alternative or carry rain protection; outdoor plans have a meaningful rain risk."
+    rationale: "The forecast rain probability is 60% or higher."
+  - id: SOP-UV-EXERCISE-01
+    category: outdoor-exercise
+    title: Very high UV outdoor exercise
+    severity: high
+    activities: [running, walking, cycling, hiking, outdoor_exercise]
+    conditions: [{field: uv_index, operator: ">=", value: 8}]
+    guidance: "Avoid unprotected strenuous outdoor exercise; use sun protection and choose a lower-UV time if possible."
+    rationale: "UV index of 8 or above needs stronger sun precautions."
+  - id: SOP-HEAT-CHILDREN-01
+    category: vulnerable-groups
+    title: Heat exposure for children
+    severity: high
+    activities: [park, walking, picnic, outdoor_exercise]
+    conditions:
+      - {field: vulnerable_group, operator: "==", value: children}
+      - {field: temperature_c, operator: ">=", value: 35}
+    guidance: "Keep outdoor time short, prioritize shade and fluids, and consider postponing active play."
+    rationale: "Children are more susceptible to heat stress at 35°C or above."
+  - id: SOP-HEAT-ELDERLY-01
+    category: vulnerable-groups
+    title: Heat exposure for older adults
+    severity: high
+    activities: [walking, outdoor_exercise, travel]
+    conditions:
+      - {field: vulnerable_group, operator: "==", value: elderly}
+      - {field: temperature_c, operator: ">=", value: 34}
+    guidance: "Avoid prolonged outdoor exertion, use shade and hydration, and postpone non-essential walking if possible."
+    rationale: "Older adults face elevated heat-stress risk at 34°C or above."
+  - id: SOP-COLD-PETS-01
+    category: vulnerable-groups
+    title: Cold conditions for pets
+    severity: moderate
+    activities: [walking, park]
+    conditions:
+      - {field: vulnerable_group, operator: "==", value: pets}
+      - {field: temperature_c, operator: "<=", value: 5}
+    guidance: "Keep pet outings brief and monitor for cold discomfort; use appropriate protection for vulnerable animals."
+    rationale: "Temperatures at or below 5°C can be uncomfortable for many pets."
+  - id: SOP-THUNDERSTORM-ALL-01
+    category: severe-weather
+    title: Thunderstorm conditions
+    severity: critical
+    activities: [any]
+    conditions: [{field: weather_code, operator: in, value: [95, 96, 99]}]
+    guidance: "Do not begin outdoor activity. Seek or remain in a substantial indoor shelter until the thunderstorm risk has passed."
+    rationale: "Open-Meteo weather code indicates thunderstorm conditions."
+  - id: SOP-SNOW-TRAVEL-01
+    category: travel
+    title: Snowy travel conditions
+    severity: high
+    activities: [commute, travel, cycling, two_wheeler]
+    conditions: [{field: weather_code, operator: in, value: [71, 73, 75, 77, 85, 86]}]
+    guidance: "Avoid non-essential travel and use official local road or transit guidance before departure."
+    rationale: "Weather conditions include snow or snow showers."
+  - id: SOP-PICNIC-GOOD-01
+    category: recreation
+    title: Picnic friendly conditions
+    severity: low
+    activities: [picnic]
+    conditions:
+      - {field: weather_code, operator: in, value: [0, 1, 2]}
+      - {field: precipitation_probability, operator: "<=", value: 30}
+      - {field: wind_kmh, operator: "<", value: 25}
+    guidance: "Conditions look broadly suitable for a picnic. Bring normal sun protection and check again if plans change."
+    rationale: "This policy treats fair or partly cloudy, low-rain, low-wind conditions as picnic friendly."
+  - id: SOP-COOL-WALK-01
+    category: outdoor-exercise
+    title: Comfortable walking conditions
+    severity: low
+    activities: [walking, park]
+    conditions:
+      - {field: temperature_c, operator: ">=", value: 12}
+      - {field: temperature_c, operator: "<=", value: 28}
+      - {field: precipitation_probability, operator: "<=", value: 20}
+    guidance: "Conditions are generally suitable for a walk or park visit; use ordinary personal precautions."
+    rationale: "Temperature and rain risk are within this policy's comfortable range."
