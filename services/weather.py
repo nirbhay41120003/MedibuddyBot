@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta
 from typing import Any
 
 import httpx
@@ -47,7 +48,7 @@ class OpenMeteoWeatherService:
             "current": "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,precipitation_probability,uv_index,weather_code",
             "hourly": "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,precipitation_probability,uv_index,weather_code",
             "daily": "precipitation_sum,wind_gusts_10m_max",
-            "forecast_days": 1,
+            "forecast_days": 2,
             "timezone": "auto",
         }
         try:
@@ -55,27 +56,36 @@ class OpenMeteoWeatherService:
             current = data["current"]
             hourly = data["hourly"]
             daily = data["daily"]
-            index = self._hour_index(hourly["time"], target_period)
+            index = self._hour_index(hourly["time"], target_period, current["time"])
+            daily_index = 1 if target_period == "tomorrow" else 0
             return WeatherSnapshot(
-                location=location, observed_at=hourly["time"][index] if target_period == "evening" else current["time"],
+                location=location, observed_at=current["time"] if target_period == "now" else hourly["time"][index],
                 target_period=target_period,
-                temperature_c=hourly["temperature_2m"][index] if target_period == "evening" else current.get("temperature_2m"),
-                wind_kmh=hourly["wind_speed_10m"][index] if target_period == "evening" else current.get("wind_speed_10m"),
-                precipitation_mm=hourly["precipitation"][index] if target_period == "evening" else current.get("precipitation"),
-                precipitation_probability=hourly["precipitation_probability"][index] if target_period == "evening" else current.get("precipitation_probability"),
-                uv_index=hourly["uv_index"][index] if target_period == "evening" else current.get("uv_index"),
-                weather_code=hourly["weather_code"][index] if target_period == "evening" else current.get("weather_code"),
-                precipitation_sum_mm=daily["precipitation_sum"][0],
-                wind_gust_kmh=hourly["wind_gusts_10m"][index] if target_period == "evening" else current.get("wind_gusts_10m"),
-                wind_gust_max_kmh=daily["wind_gusts_10m_max"][0],
+                temperature_c=current.get("temperature_2m") if target_period == "now" else hourly["temperature_2m"][index],
+                wind_kmh=current.get("wind_speed_10m") if target_period == "now" else hourly["wind_speed_10m"][index],
+                precipitation_mm=current.get("precipitation") if target_period == "now" else hourly["precipitation"][index],
+                precipitation_probability=current.get("precipitation_probability") if target_period == "now" else hourly["precipitation_probability"][index],
+                uv_index=current.get("uv_index") if target_period == "now" else hourly["uv_index"][index],
+                weather_code=current.get("weather_code") if target_period == "now" else hourly["weather_code"][index],
+                precipitation_sum_mm=daily["precipitation_sum"][daily_index],
+                wind_gust_kmh=current.get("wind_gusts_10m") if target_period == "now" else hourly["wind_gusts_10m"][index],
+                wind_gust_max_kmh=daily["wind_gusts_10m_max"][daily_index],
             )
         except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
             raise WeatherServiceError("Live weather is unavailable") from exc
 
     @staticmethod
-    def _hour_index(times: list[str], target_period: str) -> int:
+    def _hour_index(times: list[str], target_period: str, current_time: str | None = None) -> int:
         if target_period == "evening":
             for index, value in enumerate(times):
                 if "T18:" in value:
+                    return index
+        if target_period == "tomorrow" and current_time:
+            current = datetime.fromisoformat(current_time)
+            target_date = current.date() + timedelta(days=1)
+            target_hour = current.strftime("%H:")
+            target_prefix = f"{target_date.isoformat()}T{target_hour}"
+            for index, value in enumerate(times):
+                if value.startswith(target_prefix):
                     return index
         return 0

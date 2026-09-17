@@ -60,3 +60,8 @@ async def test_fetch_requests_and_preserves_rain_and_gust_fields():
     assert snapshot.wind_gust_max_kmh == 34.0
     assert snapshot.precipitation_probability == 2
     assert snapshot.uv_index == 0
+
+
+def test_tomorrow_selects_same_local_hour_on_next_date():
+    times = ["2026-09-17T17:00", "2026-09-18T17:00", "2026-09-18T18:00"]
+    assert OpenMeteoWeatherService._hour_index(times, "tomorrow", "2026-09-17T17:30") == 1

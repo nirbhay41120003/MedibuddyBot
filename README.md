@@ -17,7 +17,7 @@ The LangGraph path is intentionally branched:
 
 Missing location and geocoding/weather failures branch directly to an honest fallback; a policy miss branches to a no-guidance response. Session memory retains the resolved `Location` only in process, allowing follow-ups such as “what about this evening?” without carrying advice between users.
 
-The bot only reuses a previous activity for an explicit short follow-up such as “what about tonight?” Greetings, gibberish, unrelated messages, and a new city without a recognized activity return an intent prompt and never receive stale weather advice from the previous turn.
+The bot only reuses a previous activity for an explicit short follow-up such as “what about tonight?” or “what about tomorrow?” Greetings, gibberish, unrelated messages, and a new city without a recognized activity return an intent prompt and never receive stale weather advice from the previous turn.
 
 `app/graph.py` keeps language composition separate from intent parsing. The response composer never reads the raw user message: it receives only an outcome, the selected SOP, and Open-Meteo values. This prevents prompt text from authorizing facts or advice.
 
@@ -77,4 +77,4 @@ The automated tests use fake weather so they are repeatable. They cover a tracea
 
 ## Limitations
 
-By default, the bot uses deterministic, inspectable intent extraction so user text cannot influence policy decisions or compose advice. If `GROQ_API_KEY` is set and `USE_GROQ_INTENT=true` in `.env`, it uses Groq's `openai/gpt-oss-20b` only to map intent into a constrained schema. That adapter cannot select policies, access weather, or compose advice; failures fall back to the deterministic parser. Policy matching and the sealed composer remain deterministic in both modes.
+By default, the bot uses deterministic, inspectable intent extraction so user text cannot influence policy decisions or compose advice. If `GROQ_API_KEY` is set and `USE_GROQ_INTENT=true`, the app first identifies greetings and context-only follow-ups locally, then sends task-like requests to Groq's `openai/gpt-oss-20b` for semantic activity, time-period, and vulnerable-group classification. The result is validated against the allowed schema and explicit local corrections remain guardrails; invalid responses or failures fall back to the deterministic parser. The LLM cannot select policies, access weather, or compose advice; policy matching and the sealed composer remain deterministic in both modes.

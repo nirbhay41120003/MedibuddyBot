@@ -42,7 +42,7 @@ async def _understand(state: AdvisoryState) -> dict:
 def _is_contextual_follow_up(message: str) -> bool:
     text = message.casefold().strip()
     return bool(re.fullmatch(
-        r"(?:and\s+)?(?:what\s+about\s+)?(?:now|today|tonight|later|this evening|this afternoon)(?:\s+instead)?[?.!]*",
+            r"(?:and\s+)?(?:what\s+about\s+)?(?:now|today|tomorrow|tonight|later|this evening|this afternoon)(?:\s+instead)?[?.!]*",
         text,
     ))
 
@@ -88,7 +88,8 @@ def _format_facts(weather: WeatherSnapshot) -> str:
     if weather.precipitation_mm is not None: facts.append(f"precipitation {weather.precipitation_mm:g} mm")
     if weather.precipitation_probability is not None: facts.append(f"rain probability {weather.precipitation_probability:g}%")
     if weather.uv_index is not None: facts.append(f"UV index {weather.uv_index:g}")
-    if weather.precipitation_sum_mm is not None: facts.append(f"today's precipitation forecast {weather.precipitation_sum_mm:g} mm")
+    forecast_label = "tomorrow's" if weather.target_period == "tomorrow" else "today's"
+    if weather.precipitation_sum_mm is not None: facts.append(f"{forecast_label} precipitation forecast {weather.precipitation_sum_mm:g} mm")
     if weather.wind_gust_kmh is not None: facts.append(f"wind gusts {weather.wind_gust_kmh:g} km/h")
     if weather.wind_gust_max_kmh is not None: facts.append(f"maximum forecast gusts {weather.wind_gust_max_kmh:g} km/h")
     return ", ".join(facts)
@@ -107,7 +108,7 @@ def _compose(state: AdvisoryState) -> dict:
         return {"reply": "I have live weather, but no SOP covers that activity and situation, so I don’t have guidance to provide."}
     weather, sop = state["weather"], state["selected_sop"]
     assert sop is not None
-    period = "this evening" if weather.target_period == "evening" else "now"
+    period = {"now": "now", "evening": "this evening", "tomorrow": "tomorrow"}[weather.target_period]
     return {"reply": (
         f"{sop.guidance} For {weather.location.name} {period}, Open-Meteo reports {_format_facts(weather)}. "
         f"Policy: {sop.id} — {sop.title} ({sop.severity.value} severity)."

@@ -2,7 +2,7 @@
 
 Run date: 2026-09-17
 
-The repeatable suite uses fake provider responses so policy behavior is not affected by changing weather. `pytest -q` passed 22 tests after the final policy and context updates.
+The repeatable suite uses fake provider responses so policy behavior is not affected by changing weather. `pytest -q` passed 28 tests after the final policy, context, forecast-period, and optional-LLM updates.
 
 | Check | Pass condition | Result |
 | --- | --- | --- |
@@ -12,6 +12,7 @@ The repeatable suite uses fake provider responses so policy behavior is not affe
 | Camping | Recognized camping requests receive an explicit camping SOP | Passed |
 | Context safety | Greetings, gibberish, and a new city do not inherit stale activity advice | Passed |
 | Provider fields | Daily precipitation and wind-gust fields are requested and preserved | Passed |
+| Optional LLM | Greetings/context-only follow-ups skip Groq; task text uses a validated constrained result; invalid output falls back safely | Passed with mocked client |
 | Paraphrase 1 | “bicycle” maps to cycling without SOP wording | Passed |
 | Paraphrase 2 | “stroll” maps to walking and selects `SOP-COOL-WALK-01` | Passed |
 | No policy | Unknown activity returns no guidance | Passed |

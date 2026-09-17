@@ -42,7 +42,7 @@ class Location(BaseModel):
 class WeatherSnapshot(BaseModel):
     location: Location
     observed_at: str
-    target_period: Literal["now", "evening"] = "now"
+    target_period: Literal["now", "evening", "tomorrow"] = "now"
     temperature_c: float | None = None
     wind_kmh: float | None = None
     precipitation_mm: float | None = None
@@ -57,7 +57,7 @@ class WeatherSnapshot(BaseModel):
 
 class Intent(BaseModel):
     activity: str
-    target_period: Literal["now", "evening"] = "now"
+    target_period: Literal["now", "evening", "tomorrow"] = "now"
     vulnerable_group: str | None = None
 
 
