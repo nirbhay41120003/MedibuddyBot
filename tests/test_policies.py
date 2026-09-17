@@ -28,6 +28,22 @@ def test_high_rain_probability_cycling_policy_applies():
     assert matches[0].id == "SOP-RAIN-CYCLE-02"
 
 
+def test_fair_cycling_conditions_have_suitability_guidance():
+    matches = match_sops(
+        weather(
+            temperature_c=26.9,
+            wind_kmh=7.9,
+            precipitation_mm=0,
+            precipitation_probability=2,
+            uv_index=0,
+            weather_code=1,
+        ),
+        "cycling",
+        None,
+    )
+    assert matches[0].id == "SOP-CYCLE-GOOD-01"
+
+
 def test_city_extraction_uses_the_final_location_marker():
     from app.intent import extract_city
     assert extract_city("Is it safe to travel by motorcycle in Lucknow today?") == "Lucknow"

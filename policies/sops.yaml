@@ -25,6 +25,19 @@ sops:
     conditions: [{field: precipitation_probability, operator: ">=", value: 70}]
     guidance: "Avoid cycling or a two-wheeler trip if it is not essential; plan an alternate route or transport option."
     rationale: "A rain probability of 70% or higher creates a material wet-road and visibility risk for exposed riders."
+  - id: SOP-CYCLE-GOOD-01
+    category: active-travel
+    title: Generally suitable cycling conditions
+    severity: low
+    activities: [cycling, two_wheeler]
+    conditions:
+      - {field: temperature_c, operator: ">=", value: 10}
+      - {field: temperature_c, operator: "<=", value: 32}
+      - {field: precipitation_probability, operator: "<=", value: 20}
+      - {field: wind_kmh, operator: "<", value: 30}
+      - {field: weather_code, operator: in, value: [0, 1, 2, 3]}
+    guidance: "Conditions look broadly suitable for cycling; wear a helmet, follow traffic rules, and recheck if the weather changes."
+    rationale: "Mild temperatures, low rain risk, light wind, and fair-to-overcast conditions are within this policy's cycling range."
   - id: SOP-RAIN-OUTDOOR-01
     category: recreation
     title: Rainy outdoor activity

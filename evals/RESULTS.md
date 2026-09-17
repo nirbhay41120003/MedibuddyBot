@@ -1,12 +1,13 @@
 # Evaluation results
 
-Run date: 2026-09-05
+Run date: 2026-09-17
 
-The repeatable suite uses fake provider responses so policy behavior is not affected by changing weather. `pytest -q` passed 11 tests after the final policy update.
+The repeatable suite uses fake provider responses so policy behavior is not affected by changing weather. `pytest -q` passed 15 tests after the cycling suitability policy update.
 
 | Check | Pass condition | Result |
 | --- | --- | --- |
 | Applying SOP | High wind bicycle request cites `SOP-WIND-CYCLE-01` and the provider's 45 km/h value | Passed |
+| Ordinary cycling | Mild Bhopal-like conditions cite `SOP-CYCLE-GOOD-01` | Passed |
 | Paraphrase 1 | “bicycle” maps to cycling without SOP wording | Passed |
 | Paraphrase 2 | “stroll” maps to walking and selects `SOP-COOL-WALK-01` | Passed |
 | No policy | Unknown activity returns no guidance | Passed |
@@ -17,4 +18,4 @@ The repeatable suite uses fake provider responses so policy behavior is not affe
 
 ## Live smoke-test observation
 
-The live evaluator was also run on 2026-09-05. Bhopal returned 23.9°C, 18.7 km/h wind, 0.5 mm precipitation, and 83% rain probability. It selected and cited `SOP-RAIN-CYCLE-02`, demonstrating that the output numbers came from the live API. A London request encountered a transient provider failure and returned the weather-unavailable fallback; it did not fabricate weather or advice. This is expected behavior, and illustrates why live checks are recorded separately from deterministic tests.
+The live Bhopal reproduction on 2026-09-17 returned 26.9°C, 7.9 km/h wind, 0.0 mm precipitation, 2% rain probability, and weather code 1. It now selects and cites `SOP-CYCLE-GOOD-01`, demonstrating that ordinary cycling conditions receive guidance and that the output numbers came from the live API. Live outcomes remain time-dependent, so recorded provider fixtures are used for durable tests.

@@ -22,9 +22,9 @@ Missing location and geocoding/weather failures branch directly to an honest fal
 
 ## Policies
 
-Policies live in [policies/sops.yaml](policies/sops.yaml), because YAML is reviewable by non-developers and can be edited or extended without changing graph, weather, or response code. There are 12 SOPs across active travel, travel, recreation, outdoor exercise, vulnerable groups, and severe weather. Their `conditions` use a small declarative field/operator/value DSL.
+Policies live in [policies/sops.yaml](policies/sops.yaml), because YAML is reviewable by non-developers and can be edited or extended without changing graph, weather, or response code. There are 13 SOPs across active travel, travel, recreation, outdoor exercise, vulnerable groups, and severe weather. Supported cycling and two-wheeler requests receive suitability guidance in ordinary conditions; their `conditions` use a small declarative field/operator/value DSL.
 
-When several policies apply, the matcher returns the single highest-severity policy (`critical > high > moderate > low`). This is deterministic and prioritizes the most safety-relevant guidance. Add an 11th policy by adding a YAML record using an existing weather field; no control-flow edit is needed.
+When several policies apply, the matcher returns the single highest-severity policy (`critical > high > moderate > low`). This is deterministic and prioritizes the most safety-relevant guidance. Add another policy by adding a YAML record using an existing weather field; no control-flow edit is needed.
 
 ## Setup and run
 
@@ -68,7 +68,7 @@ pytest
 python evals/run_evals.py
 ```
 
-The automated tests use fake weather so they are repeatable. They cover a traceable applying SOP, paraphrased cycling intent, follow-up location memory/evening context, a missing location, and an unreachable geocoder.
+The automated tests use fake weather so they are repeatable. They cover a traceable applying SOP, ordinary Bhopal-like cycling conditions, paraphrased cycling intent, follow-up location memory/evening context, a missing location, and an unreachable geocoder.
 
 `evals/run_evals.py` is a live manual-evaluation script. It prints the expected check and the actual decision for two paraphrases, a fuzzy picnic request, a no-policy request, and an instruction-injection attempt. Live severe-weather outcomes are necessarily time-dependent: run it during an active event for the severe-event check. For durable CI, recorded Open-Meteo fixtures should be used alongside—not instead of—the live smoke test.
 

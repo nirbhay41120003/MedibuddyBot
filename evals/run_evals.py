@@ -9,7 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from app.graph import build_graph
 
 CASES = [
-    ("SOP applies / paraphrase", "Can I take my bicycle out in Bhopal today?", "Expect a cited SOP if conditions meet one; otherwise an honest no-policy result."),
+    ("SOP applies / ordinary cycling", "Can I take my bicycle out in Bhopal today?", "Expect a cited cycling SOP when ordinary conditions meet the suitability policy."),
     ("SOP applies / paraphrase", "Would a stroll in London be sensible today?", "Intent must map to walking without SOP wording."),
     ("Fuzzy picnic", "Is today nice for a picnic in Berlin?", "Must either cite picnic/rain policy or say no SOP applies."),
     ("No policy", "Can I fly a kite in Pune today?", "Must not invent advice; expect no SOP."),
