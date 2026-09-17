@@ -1,13 +1,12 @@
 # Weather Advisory Support Bot
 
-#check the deployed app
-https://medbuddy-ui.onrender.com/
-The backend might go to sleep when inactive so please open this backend
-https://medbuddy-api-jbnb.onrender.com/
-and then in a new tab open the frontend
-https://medbuddy-ui.onrender.com/
+## Deployed app
 
-Thankyou
+- Web app: https://med-buddy-tau.vercel.app/
+- API health: https://med-buddy-tau.vercel.app/api/health
+- API endpoint: `POST https://med-buddy-tau.vercel.app/api/chat`
+
+The project is connected to GitHub. Pushes to the production branch (`main`) automatically trigger a Vercel deployment. The older Render URLs are no longer required for the Vercel deployment.
 A policy-bound outdoor-safety chatbot. It fetches live Open-Meteo data, evaluates declarative YAML SOPs, and returns only the selected policy's guidance with an in-answer policy citation. It never estimates weather, and it declines when weather or location is unavailable.
 
 ## Architecture
@@ -18,15 +17,17 @@ The LangGraph path is intentionally branched:
 
 Missing location and geocoding/weather failures branch directly to an honest fallback; a policy miss branches to a no-guidance response. Session memory retains the resolved `Location` only in process, allowing follow-ups such as “what about this evening?” without carrying advice between users.
 
-The bot only reuses a previous activity for an explicit short follow-up such as “what about tonight?” Greetings, gibberish, and unrelated messages return an intent prompt and never receive stale weather advice from the previous turn.
+The bot only reuses a previous activity for an explicit short follow-up such as “what about tonight?” Greetings, gibberish, unrelated messages, and a new city without a recognized activity return an intent prompt and never receive stale weather advice from the previous turn.
 
 `app/graph.py` keeps language composition separate from intent parsing. The response composer never reads the raw user message: it receives only an outcome, the selected SOP, and Open-Meteo values. This prevents prompt text from authorizing facts or advice.
 
+The broad heavy-rain SOP uses live precipitation, rain probability, daily precipitation totals, and WMO weather codes. Open-Meteo is a weather provider, not an IMD bulletin feed, so official regional advisories are not invented or treated as facts; an approved alert feed can be added later as another weather field and YAML condition without changing the matcher or graph.
+
 ## Policies
 
-Policies live in [policies/sops.yaml](policies/sops.yaml), because YAML is reviewable by non-developers and can be edited or extended without changing graph, weather, or response code. There are 13 SOPs across active travel, travel, recreation, outdoor exercise, vulnerable groups, and severe weather. Supported cycling and two-wheeler requests receive suitability guidance in ordinary conditions; their `conditions` use a small declarative field/operator/value DSL.
+Policies live in [policies/sops.yaml](policies/sops.yaml), because YAML is reviewable by non-developers and can be edited or extended without changing graph, weather, or response code. There are 16 SOPs across active travel, travel, recreation, outdoor exercise, vulnerable groups, and severe weather. Supported cycling, two-wheeler, and camping requests receive suitability guidance in ordinary conditions; their `conditions` use a small declarative field/operator/value DSL.
 
-When several policies apply, the matcher returns the single highest-severity policy (`critical > high > moderate > low`). This is deterministic and prioritizes the most safety-relevant guidance. Add another policy by adding a YAML record using an existing weather field; no control-flow edit is needed.
+When several policies apply, the matcher returns the single highest-severity policy (`critical > high > moderate > low`). At equal severity, an all-activity hazard outranks a narrower activity rule so a broad severe-weather risk is not hidden. This is deterministic and prioritizes the most safety-relevant guidance. Add another policy by adding a YAML record using an existing weather field; no control-flow edit is needed.
 
 ## Setup and run
 

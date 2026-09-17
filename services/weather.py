@@ -44,8 +44,9 @@ class OpenMeteoWeatherService:
         params = {
             "latitude": location.latitude,
             "longitude": location.longitude,
-            "current": "temperature_2m,wind_speed_10m,precipitation,weather_code",
-            "hourly": "temperature_2m,wind_speed_10m,precipitation,precipitation_probability,uv_index,weather_code",
+            "current": "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,precipitation_probability,uv_index,weather_code",
+            "hourly": "temperature_2m,wind_speed_10m,wind_gusts_10m,precipitation,precipitation_probability,uv_index,weather_code",
+            "daily": "precipitation_sum,wind_gusts_10m_max",
             "forecast_days": 1,
             "timezone": "auto",
         }
@@ -53,6 +54,7 @@ class OpenMeteoWeatherService:
             data = await self._get(OPEN_METEO_FORECAST_URL, params)
             current = data["current"]
             hourly = data["hourly"]
+            daily = data["daily"]
             index = self._hour_index(hourly["time"], target_period)
             return WeatherSnapshot(
                 location=location, observed_at=hourly["time"][index] if target_period == "evening" else current["time"],
@@ -60,9 +62,12 @@ class OpenMeteoWeatherService:
                 temperature_c=hourly["temperature_2m"][index] if target_period == "evening" else current.get("temperature_2m"),
                 wind_kmh=hourly["wind_speed_10m"][index] if target_period == "evening" else current.get("wind_speed_10m"),
                 precipitation_mm=hourly["precipitation"][index] if target_period == "evening" else current.get("precipitation"),
-                precipitation_probability=hourly["precipitation_probability"][index],
-                uv_index=hourly["uv_index"][index],
+                precipitation_probability=hourly["precipitation_probability"][index] if target_period == "evening" else current.get("precipitation_probability"),
+                uv_index=hourly["uv_index"][index] if target_period == "evening" else current.get("uv_index"),
                 weather_code=hourly["weather_code"][index] if target_period == "evening" else current.get("weather_code"),
+                precipitation_sum_mm=daily["precipitation_sum"][0],
+                wind_gust_kmh=hourly["wind_gusts_10m"][index] if target_period == "evening" else current.get("wind_gusts_10m"),
+                wind_gust_max_kmh=daily["wind_gusts_10m_max"][0],
             )
         except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
             raise WeatherServiceError("Live weather is unavailable") from exc

@@ -49,4 +49,10 @@ def match_sops(weather: WeatherSnapshot, activity: str, vulnerable_group: str | 
         applies = all(checks) if sop.condition_mode == "all" else any(checks)
         if applies:
             matched.append(sop)
-    return sorted(matched, key=lambda sop: SEVERITY_RANK[sop.severity], reverse=True)
+    # At equal severity, a broad all-activity hazard wins over an activity
+    # detail, so the response leads with the wider safety risk.
+    return sorted(
+        matched,
+        key=lambda sop: (SEVERITY_RANK[sop.severity], "any" in sop.activities),
+        reverse=True,
+    )

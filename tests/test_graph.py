@@ -92,6 +92,17 @@ async def test_gibberish_does_not_reuse_previous_cycling_context():
 
 
 @pytest.mark.asyncio
+async def test_new_city_without_activity_does_not_reuse_previous_activity():
+    remembered = Location(name="Bhopal", latitude=23.25469, longitude=77.40289)
+    result = await build_graph(FakeWeather()).ainvoke({
+        "message": "What is the weather in Lucknow today?",
+        "remembered_location": remembered,
+        "remembered_intent": Intent(activity="cycling"),
+    })
+    assert result["outcome"] == "intent_needed"
+
+
+@pytest.mark.asyncio
 async def test_missing_location_is_honest():
     result = await build_graph(FakeWeather()).ainvoke({"message": "Is it safe to walk today?"})
     assert result["outcome"] == "location_needed"

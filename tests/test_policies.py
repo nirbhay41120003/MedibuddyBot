@@ -10,7 +10,7 @@ def weather(**changes) -> WeatherSnapshot:
 
 def test_stronger_policy_wins_when_multiple_match():
     matches = match_sops(weather(wind_kmh=46, precipitation_mm=9), "cycling", None)
-    assert matches[0].id == "SOP-WIND-CYCLE-01"
+    assert matches[0].id == "SOP-HEAVY-RAIN-ALL-01"
     assert {item.id for item in matches} >= {"SOP-WIND-CYCLE-01", "SOP-RAIN-TRAVEL-01"}
 
 
@@ -25,7 +25,7 @@ def test_paraphrased_bike_intent():
 
 def test_high_rain_probability_cycling_policy_applies():
     matches = match_sops(weather(precipitation_probability=83), "cycling", None)
-    assert matches[0].id == "SOP-RAIN-CYCLE-02"
+    assert matches[0].id == "SOP-HEAVY-RAIN-ALL-01"
 
 
 def test_fair_cycling_conditions_have_suitability_guidance():
@@ -42,6 +42,31 @@ def test_fair_cycling_conditions_have_suitability_guidance():
         None,
     )
     assert matches[0].id == "SOP-CYCLE-GOOD-01"
+
+
+def test_heavy_rain_signal_overrides_normal_cycling_guidance():
+    matches = match_sops(
+        weather(precipitation_probability=85, precipitation_sum_mm=62, weather_code=1),
+        "cycling",
+        None,
+    )
+    assert matches[0].id == "SOP-HEAVY-RAIN-ALL-01"
+
+
+def test_camping_has_explicit_policy_coverage():
+    matches = match_sops(
+        weather(temperature_c=24, wind_kmh=8, precipitation_probability=10, weather_code=1),
+        "camping",
+        None,
+    )
+    assert matches[0].id == "SOP-CAMP-GOOD-01"
+
+
+def test_camping_and_explicit_correction_intent():
+    from app.intent import extract_intent
+    assert extract_intent("Can I go camping in Lucknow today?").activity == "camping"
+    assert extract_intent("not cycling but camping in Lucknow").activity == "camping"
+    assert extract_intent("Is it safe to bike to work in Bhopal?").activity == "cycling"
 
 
 def test_city_extraction_uses_the_final_location_marker():

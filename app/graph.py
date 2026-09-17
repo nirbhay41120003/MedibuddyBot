@@ -27,26 +27,24 @@ class AdvisoryState(TypedDict, total=False):
 
 async def _understand(state: AdvisoryState) -> dict:
     intent = await extract_intent_with_optional_llm(state["message"])
+    city = extract_city(state["message"])
     prior = state.get("remembered_intent")
     # Only an explicit follow-up can inherit the prior activity. Greetings,
     # gibberish, and unrelated messages must never receive stale advice.
-    if intent.activity == "unknown" and prior and _is_contextual_follow_up(state["message"]):
+    if intent.activity == "unknown" and prior and not city and _is_contextual_follow_up(state["message"]):
         intent = intent.model_copy(update={
             "activity": prior.activity,
             "vulnerable_group": intent.vulnerable_group or prior.vulnerable_group,
         })
-    return {"intent": intent, "city": extract_city(state["message"])}
+    return {"intent": intent, "city": city}
 
 
 def _is_contextual_follow_up(message: str) -> bool:
     text = message.casefold().strip()
-    return bool(
-        re.search(
-            r"\b(?:what about|how about|and|instead|same|there|later|tonight|this evening|this afternoon|today)\b",
-            text,
-        )
-        and len(text.split()) <= 12
-    )
+    return bool(re.fullmatch(
+        r"(?:and\s+)?(?:what\s+about\s+)?(?:now|today|tonight|later|this evening|this afternoon)(?:\s+instead)?[?.!]*",
+        text,
+    ))
 
 
 def _resolve_location(state: AdvisoryState) -> dict:
@@ -90,6 +88,9 @@ def _format_facts(weather: WeatherSnapshot) -> str:
     if weather.precipitation_mm is not None: facts.append(f"precipitation {weather.precipitation_mm:g} mm")
     if weather.precipitation_probability is not None: facts.append(f"rain probability {weather.precipitation_probability:g}%")
     if weather.uv_index is not None: facts.append(f"UV index {weather.uv_index:g}")
+    if weather.precipitation_sum_mm is not None: facts.append(f"today's precipitation forecast {weather.precipitation_sum_mm:g} mm")
+    if weather.wind_gust_kmh is not None: facts.append(f"wind gusts {weather.wind_gust_kmh:g} km/h")
+    if weather.wind_gust_max_kmh is not None: facts.append(f"maximum forecast gusts {weather.wind_gust_max_kmh:g} km/h")
     return ", ".join(facts)
 
 
@@ -99,7 +100,7 @@ def _compose(state: AdvisoryState) -> dict:
     if outcome == "location_needed":
         return {"reply": "Please tell me the city so I can check live weather before applying a safety policy."}
     if outcome == "intent_needed":
-        return {"reply": "Hi! Tell me the outdoor activity and city you want checked, for example: ‘Is it safe to cycle in Bhopal today?’"}
+        return {"reply": "Tell me the outdoor activity and city you want checked, for example: ‘Is it safe to cycle or go camping in Bhopal today?’"}
     if outcome == "weather_unavailable":
         return {"reply": "I couldn’t obtain live weather for that location, so I can’t apply a safety policy safely. Please try again shortly."}
     if outcome == "no_policy":

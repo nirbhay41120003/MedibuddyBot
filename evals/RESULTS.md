@@ -2,12 +2,16 @@
 
 Run date: 2026-09-17
 
-The repeatable suite uses fake provider responses so policy behavior is not affected by changing weather. `pytest -q` passed 15 tests after the cycling suitability policy update.
+The repeatable suite uses fake provider responses so policy behavior is not affected by changing weather. `pytest -q` passed 22 tests after the final policy and context updates.
 
 | Check | Pass condition | Result |
 | --- | --- | --- |
 | Applying SOP | High wind bicycle request cites `SOP-WIND-CYCLE-01` and the provider's 45 km/h value | Passed |
 | Ordinary cycling | Mild Bhopal-like conditions cite `SOP-CYCLE-GOOD-01` | Passed |
+| Broad heavy rain | Same-severity all-activity rain risk outranks activity-specific guidance | Passed |
+| Camping | Recognized camping requests receive an explicit camping SOP | Passed |
+| Context safety | Greetings, gibberish, and a new city do not inherit stale activity advice | Passed |
+| Provider fields | Daily precipitation and wind-gust fields are requested and preserved | Passed |
 | Paraphrase 1 | “bicycle” maps to cycling without SOP wording | Passed |
 | Paraphrase 2 | “stroll” maps to walking and selects `SOP-COOL-WALK-01` | Passed |
 | No policy | Unknown activity returns no guidance | Passed |

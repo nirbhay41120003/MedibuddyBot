@@ -49,6 +49,9 @@ class WeatherSnapshot(BaseModel):
     precipitation_probability: float | None = None
     uv_index: float | None = None
     weather_code: int | None = None
+    precipitation_sum_mm: float | None = None
+    wind_gust_kmh: float | None = None
+    wind_gust_max_kmh: float | None = None
     source: str = "Open-Meteo"
 
 

@@ -8,7 +8,8 @@ from app.models import Intent
 from app.config import GROQ_API_KEY, GROQ_MODEL, USE_GROQ_INTENT
 
 ACTIVITY_PATTERNS = {
-    "cycling": ("cycle", "cycling", "bike ride", "bicycle"),
+    "camping": ("camping", "camp", "tent", "overnight outdoors"),
+    "cycling": ("cycle", "cycling", "bike", "bike ride", "bicycle"),
     "two_wheeler": ("scooter", "motorbike", "motorcycle", "two-wheeler"),
     "commute": ("commute", "work", "office"),
     "travel": ("travel", "drive", "journey", "trip"),
@@ -24,7 +25,7 @@ ACTIVITY_PATTERNS = {
 def extract_intent(message: str) -> Intent:
     """Small, inspectable intent parser. It has no authority to give advice."""
     text = message.lower()
-    activity = next((name for name, terms in ACTIVITY_PATTERNS.items() if any(term in text for term in terms)), "unknown")
+    activity = _extract_activity(text)
     vulnerable_group = next((group for group, terms in {
         "children": ("kid", "child", "children", "baby"),
         "elderly": ("elderly", "older adult", "senior", "grandparent"),
@@ -32,6 +33,19 @@ def extract_intent(message: str) -> Intent:
     }.items() if any(term in text for term in terms)), None)
     target_period = "evening" if any(term in text for term in ("evening", "tonight", "after 5", "later today")) else "now"
     return Intent(activity=activity, target_period=target_period, vulnerable_group=vulnerable_group)
+
+
+def _extract_activity(text: str) -> str:
+    """Find the first non-negated known activity, preserving explicit corrections."""
+    candidates: list[tuple[int, str]] = []
+    for name, terms in ACTIVITY_PATTERNS.items():
+        for term in terms:
+            for match in re.finditer(re.escape(term), text):
+                prefix = text[max(0, match.start() - 18):match.start()]
+                if re.search(r"\b(?:not|don't|do not|no longer)\s*$", prefix):
+                    continue
+                candidates.append((match.start(), name))
+    return min(candidates)[1] if candidates else "unknown"
 
 
 async def extract_intent_with_optional_llm(message: str) -> Intent:
