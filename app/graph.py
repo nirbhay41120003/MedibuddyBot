@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Literal, TypedDict
 
 from langgraph.graph import END, START, StateGraph
@@ -20,16 +21,16 @@ class AdvisoryState(TypedDict, total=False):
     location: Location
     weather: WeatherSnapshot
     selected_sop: SOP | None
-    outcome: Literal["matched", "no_policy", "weather_unavailable", "location_needed"]
+    outcome: Literal["matched", "no_policy", "weather_unavailable", "location_needed", "intent_needed"]
     reply: str
 
 
 async def _understand(state: AdvisoryState) -> dict:
     intent = await extract_intent_with_optional_llm(state["message"])
     prior = state.get("remembered_intent")
-    # Follow-ups such as “what about this evening?” omit the activity. Retain
-    # only session context, never advice or weather values, from the prior turn.
-    if intent.activity == "unknown" and prior:
+    # Only an explicit follow-up can inherit the prior activity. Greetings,
+    # gibberish, and unrelated messages must never receive stale advice.
+    if intent.activity == "unknown" and prior and _is_contextual_follow_up(state["message"]):
         intent = intent.model_copy(update={
             "activity": prior.activity,
             "vulnerable_group": intent.vulnerable_group or prior.vulnerable_group,
@@ -37,8 +38,21 @@ async def _understand(state: AdvisoryState) -> dict:
     return {"intent": intent, "city": extract_city(state["message"])}
 
 
+def _is_contextual_follow_up(message: str) -> bool:
+    text = message.casefold().strip()
+    return bool(
+        re.search(
+            r"\b(?:what about|how about|and|instead|same|there|later|tonight|this evening|this afternoon|today)\b",
+            text,
+        )
+        and len(text.split()) <= 12
+    )
+
+
 def _resolve_location(state: AdvisoryState) -> dict:
     # The async resolver runs in the next node; choose memory here to retain a real branch.
+    if state["intent"].activity == "unknown":
+        return {"outcome": "intent_needed"}
     if state.get("city"):
         return {}
     if state.get("remembered_location"):
@@ -84,6 +98,8 @@ def _compose(state: AdvisoryState) -> dict:
     outcome = state["outcome"]
     if outcome == "location_needed":
         return {"reply": "Please tell me the city so I can check live weather before applying a safety policy."}
+    if outcome == "intent_needed":
+        return {"reply": "Hi! Tell me the outdoor activity and city you want checked, for example: ‘Is it safe to cycle in Bhopal today?’"}
     if outcome == "weather_unavailable":
         return {"reply": "I couldn’t obtain live weather for that location, so I can’t apply a safety policy safely. Please try again shortly."}
     if outcome == "no_policy":
@@ -98,7 +114,7 @@ def _compose(state: AdvisoryState) -> dict:
 
 
 def _after_location(state: AdvisoryState) -> str:
-    return "compose" if state.get("outcome") == "location_needed" else "geocode"
+    return "compose" if state.get("outcome") in {"location_needed", "intent_needed"} else "geocode"
 
 
 def _after_geocode(state: AdvisoryState) -> str:

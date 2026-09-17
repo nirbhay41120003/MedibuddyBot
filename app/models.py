@@ -70,7 +70,7 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     session_id: str
     reply: str
-    outcome: Literal["matched", "no_policy", "weather_unavailable", "location_needed"]
+    outcome: Literal["matched", "no_policy", "weather_unavailable", "location_needed", "intent_needed"]
     sop_id: str | None = None
     severity: Severity | None = None
     weather: WeatherSnapshot | None = None
