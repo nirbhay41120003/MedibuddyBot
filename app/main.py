@@ -13,11 +13,13 @@ sessions: dict[str, dict] = defaultdict(dict)
 
 
 @app.get("/health")
+@app.get("/api/health")
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
 @app.post("/chat", response_model=ChatResponse)
+@app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest) -> ChatResponse:
     prior = sessions[request.session_id]
     result = await graph.ainvoke({

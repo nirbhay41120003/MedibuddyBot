@@ -40,6 +40,19 @@ streamlit run frontend.py
 
 Open the Streamlit URL printed in the terminal. Include a city in the first message, for example: “Is it safe to cycle in Bhopal today?” The backend exposes `POST /chat` and `GET /health`.
 
+## Deploy on Vercel
+
+The repository includes a Vercel Python entrypoint at `api/index.py`, API routes at `/api/chat` and `/api/health`, and a browser UI in `public/index.html`. From the project root:
+
+```bash
+npm i -g vercel
+vercel login
+vercel
+vercel --prod
+```
+
+When prompted, use the current directory as the project root, choose a lowercase project name such as `medbuddy`, and keep the detected Python settings. No `GROQ_API_KEY` is required because deterministic intent extraction is the default. If you use the optional Groq classifier, add `GROQ_API_KEY` and `USE_GROQ_INTENT=true` under the Vercel project's Settings → Environment Variables, then redeploy. The deployed site and API are same-origin, so no `BACKEND_URL` is needed. Vercel's Python runtime detects the exported FastAPI `app`; the runtime version is pinned by `.python-version`.
+
 ## Tests and evaluations
 
 ```bash

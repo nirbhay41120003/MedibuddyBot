@@ -37,7 +37,7 @@ class OpenMeteoWeatherService:
             if not result:
                 raise WeatherServiceError(f"No location found for {city!r}")
             return Location(name=result["name"], latitude=result["latitude"], longitude=result["longitude"], country=result.get("country"), timezone=result.get("timezone"))
-        except (httpx.HTTPError, KeyError, TypeError) as exc:
+        except (httpx.HTTPError, KeyError, TypeError, ValueError) as exc:
             raise WeatherServiceError("Could not resolve the location") from exc
 
     async def fetch(self, location: Location, target_period: str = "now") -> WeatherSnapshot:
@@ -64,7 +64,7 @@ class OpenMeteoWeatherService:
                 uv_index=hourly["uv_index"][index],
                 weather_code=hourly["weather_code"][index] if target_period == "evening" else current.get("weather_code"),
             )
-        except (httpx.HTTPError, KeyError, IndexError, TypeError) as exc:
+        except (httpx.HTTPError, KeyError, IndexError, TypeError, ValueError) as exc:
             raise WeatherServiceError("Live weather is unavailable") from exc
 
     @staticmethod
