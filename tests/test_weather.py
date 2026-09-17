@@ -65,3 +65,8 @@ async def test_fetch_requests_and_preserves_rain_and_gust_fields():
 def test_tomorrow_selects_same_local_hour_on_next_date():
     times = ["2026-09-17T17:00", "2026-09-18T17:00", "2026-09-18T18:00"]
     assert OpenMeteoWeatherService._hour_index(times, "tomorrow", "2026-09-17T17:30") == 1
+
+
+def test_night_selects_nine_pm_local_hour():
+    times = ["2026-09-17T18:00", "2026-09-17T21:00", "2026-09-17T22:00"]
+    assert OpenMeteoWeatherService._hour_index(times, "night") == 1

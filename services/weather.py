@@ -80,6 +80,10 @@ class OpenMeteoWeatherService:
             for index, value in enumerate(times):
                 if "T18:" in value:
                     return index
+        if target_period == "night":
+            for index, value in enumerate(times):
+                if "T21:" in value:
+                    return index
         if target_period == "tomorrow" and current_time:
             current = datetime.fromisoformat(current_time)
             target_date = current.date() + timedelta(days=1)

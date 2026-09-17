@@ -36,6 +36,8 @@ def extract_intent(message: str) -> Intent:
     }.items() if any(term in text for term in terms)), None)
     if "tomorrow" in text:
         target_period = "tomorrow"
+    elif any(term in text for term in ("night", "tonight")):
+        target_period = "night"
     elif any(term in text for term in ("evening", "tonight", "after 5", "later today")):
         target_period = "evening"
     else:
@@ -76,7 +78,7 @@ async def extract_intent_with_optional_llm(message: str) -> Intent:
             "type": "object",
             "properties": {
                 "activity": {"type": "string", "enum": list(ACTIVITY_PATTERNS) + ["unknown"]},
-                "target_period": {"type": "string", "enum": ["now", "evening", "tomorrow"]},
+                "target_period": {"type": "string", "enum": ["now", "evening", "night", "tomorrow"]},
                 "vulnerable_group": {"type": ["string", "null"], "enum": ["children", "elderly", "pets", None]},
             },
             "required": ["activity", "target_period", "vulnerable_group"],
@@ -127,6 +129,8 @@ def extract_city(message: str) -> str | None:
     # Use the final marker: “travel by motorcycle in Lucknow today” contains
     # two `in` phrases, but only the final one introduces the city.
     tail = message[markers[-1].end():]
-    city = re.split(r"\s+(?:today|tomorrow|tonight|this evening|now)\b|[?!.]", tail, maxsplit=1, flags=re.IGNORECASE)[0]
+    city = re.split(r"\s+(?:today|tomorrow|tonight|this morning|this evening|at night|now)\b|[?!.]", tail, maxsplit=1, flags=re.IGNORECASE)[0]
     city = city.strip(" .")
+    if city.casefold() in {"now", "today", "tomorrow", "tonight", "night", "this morning", "this evening"}:
+        return None
     return city if re.fullmatch(r"[A-Za-z][A-Za-z .'-]{1,60}", city) else None

@@ -85,6 +85,10 @@ def test_tomorrow_is_a_supported_target_period():
     assert result.target_period == "tomorrow"
 
 
+def test_night_is_a_supported_target_period():
+    assert intent_module.extract_intent("Is it safe to cycle at night?").target_period == "night"
+
+
 @pytest.mark.asyncio
 async def test_invalid_llm_activity_falls_back_to_deterministic_unknown(monkeypatch):
     class InvalidClient(FakeClient):

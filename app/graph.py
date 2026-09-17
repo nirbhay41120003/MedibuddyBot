@@ -42,7 +42,7 @@ async def _understand(state: AdvisoryState) -> dict:
 def _is_contextual_follow_up(message: str) -> bool:
     text = message.casefold().strip()
     return bool(re.fullmatch(
-            r"(?:and\s+)?(?:what\s+about\s+)?(?:now|today|tomorrow|tonight|later|this evening|this afternoon)(?:\s+instead)?[?.!]*",
+            r"(?:and\s+)?(?:(?:what|how)\s+about\s+)?(?:now|today|tomorrow|tonight|night|at\s+night|later|this\s+morning|this\s+evening|this\s+afternoon)(?:\s+instead)?[?.!]*",
         text,
     ))
 
@@ -108,7 +108,7 @@ def _compose(state: AdvisoryState) -> dict:
         return {"reply": "I have live weather, but no SOP covers that activity and situation, so I don’t have guidance to provide."}
     weather, sop = state["weather"], state["selected_sop"]
     assert sop is not None
-    period = {"now": "now", "evening": "this evening", "tomorrow": "tomorrow"}[weather.target_period]
+    period = {"now": "now", "evening": "this evening", "night": "tonight", "tomorrow": "tomorrow"}[weather.target_period]
     return {"reply": (
         f"{sop.guidance} For {weather.location.name} {period}, Open-Meteo reports {_format_facts(weather)}. "
         f"Policy: {sop.id} — {sop.title} ({sop.severity.value} severity)."

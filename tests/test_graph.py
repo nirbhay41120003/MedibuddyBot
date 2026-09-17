@@ -37,6 +37,19 @@ async def test_followup_uses_session_location_and_evening():
 
 
 @pytest.mark.asyncio
+async def test_natural_night_followup_uses_session_context():
+    remembered = Location(name="Pune", latitude=1, longitude=2)
+    result = await build_graph(FakeWeather()).ainvoke({
+        "message": "What about at night?",
+        "remembered_location": remembered,
+        "remembered_intent": Intent(activity="cycling"),
+    })
+    assert result["weather"].target_period == "night"
+    assert result["weather"].location.name == "Pune"
+    assert result["selected_sop"].id == "SOP-WIND-CYCLE-01"
+
+
+@pytest.mark.asyncio
 async def test_second_paraphrase_matches_a_walk_policy():
     result = await build_graph(FakeWeather()).ainvoke({"message": "Would a stroll in Pune be sensible today?"})
     assert result["outcome"] == "matched"

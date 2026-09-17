@@ -17,7 +17,7 @@ The LangGraph path is intentionally branched:
 
 Missing location and geocoding/weather failures branch directly to an honest fallback; a policy miss branches to a no-guidance response. Session memory retains the resolved `Location` only in process, allowing follow-ups such as “what about this evening?” without carrying advice between users.
 
-The bot only reuses a previous activity for an explicit short follow-up such as “what about tonight?” or “what about tomorrow?” Greetings, gibberish, unrelated messages, and a new city without a recognized activity return an intent prompt and never receive stale weather advice from the previous turn.
+The bot only reuses a previous activity for an explicit short follow-up such as “what about tonight?” or “what about tomorrow?” Night requests use the 21:00 local forecast hour. Greetings, gibberish, unrelated messages, and a new city without a recognized activity return an intent prompt and never receive stale weather advice from the previous turn.
 
 `app/graph.py` keeps language composition separate from intent parsing. The response composer never reads the raw user message: it receives only an outcome, the selected SOP, and Open-Meteo values. This prevents prompt text from authorizing facts or advice.
 
