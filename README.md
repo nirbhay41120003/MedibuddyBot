@@ -1,5 +1,13 @@
 # Weather Advisory Support Bot
 
+#check the deployed app
+https://medbuddy-ui.onrender.com/
+The backend might go to sleep when inactive so please open this backend
+https://medbuddy-api-jbnb.onrender.com/
+and then in a new tab open the frontend
+https://medbuddy-ui.onrender.com/
+
+Thankyou
 A policy-bound outdoor-safety chatbot. It fetches live Open-Meteo data, evaluates declarative YAML SOPs, and returns only the selected policy's guidance with an in-answer policy citation. It never estimates weather, and it declines when weather or location is unavailable.
 
 ## Architecture
